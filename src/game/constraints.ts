@@ -2,12 +2,14 @@ import type {
   Arrangement,
   Constraint,
   ConstraintResult,
+  Language,
   Level,
   LevelResult,
   Person,
   PersonId,
   Seat,
 } from "./types";
+import { getPersonText, tagLabels } from "../i18n";
 
 const getPerson = (level: Level, personId: PersonId): Person =>
   level.people.find((person) => person.id === personId) ??
@@ -42,41 +44,63 @@ export const arePeopleAdjacent = (level: Level, arrangement: Arrangement, first:
   return Boolean(firstSeat && secondSeat && areSeatsAdjacent(firstSeat, secondSeat));
 };
 
-const relativeMessage = (person: Person, other: Person, direction: "left" | "right", passed: boolean) =>
-  passed
-    ? `${person.name} is safely ${direction} of ${other.name}.`
-    : `${person.name} insists on sitting ${direction} of ${other.name}.`;
+const relativeMessage = (person: Person, other: Person, direction: "left" | "right", passed: boolean, language: Language) => {
+  const personText = getPersonText(person, language);
+  const otherText = getPersonText(other, language);
 
-export const describeConstraint = (level: Level, constraint: Constraint): string => {
+  if (language === "ar") {
+    const directionText = direction === "left" ? "يسار" : "يمين";
+    return passed
+      ? `${personText.name} يجلس بأمان ${directionText} ${otherText.name}.`
+      : `${personText.name} يصر أن يجلس ${directionText} ${otherText.name}.`;
+  }
+
+  return passed
+    ? `${personText.name} is safely ${direction} of ${otherText.name}.`
+    : `${personText.name} insists on sitting ${direction} of ${otherText.name}.`;
+};
+
+export const describeConstraint = (level: Level, constraint: Constraint, language: Language = "en"): string => {
+  const personName = (personId: PersonId) => getPersonText(getPerson(level, personId), language).name;
+  const tagName = (tag: Seat["tags"][number]) => tagLabels[language][tag];
+
   switch (constraint.type) {
     case "seatTag":
-      return `${getPerson(level, constraint.personId).name} wants a ${constraint.tag} seat.`;
+      return language === "ar"
+        ? `${personName(constraint.personId)} يريد مقعد ${tagName(constraint.tag)}.`
+        : `${personName(constraint.personId)} wants a ${tagName(constraint.tag)} seat.`;
     case "notSeatTag":
-      return `${getPerson(level, constraint.personId).name} refuses the ${constraint.tag} seat.`;
+      return language === "ar"
+        ? `${personName(constraint.personId)} يرفض مقعد ${tagName(constraint.tag)}.`
+        : `${personName(constraint.personId)} refuses the ${tagName(constraint.tag)} seat.`;
     case "adjacentTo":
-      return `${getPerson(level, constraint.personId).name} wants to sit next to ${
-        getPerson(level, constraint.otherPersonId).name
-      }.`;
+      return language === "ar"
+        ? `${personName(constraint.personId)} يريد الجلوس بجانب ${personName(constraint.otherPersonId)}.`
+        : `${personName(constraint.personId)} wants to sit next to ${personName(constraint.otherPersonId)}.`;
     case "notAdjacentTo":
-      return `${getPerson(level, constraint.personId).name} does not want to sit next to ${
-        getPerson(level, constraint.otherPersonId).name
-      }.`;
+      return language === "ar"
+        ? `${personName(constraint.personId)} لا يريد الجلوس بجانب ${personName(constraint.otherPersonId)}.`
+        : `${personName(constraint.personId)} does not want to sit next to ${personName(constraint.otherPersonId)}.`;
     case "leftOf":
-      return `${getPerson(level, constraint.personId).name} must be left of ${
-        getPerson(level, constraint.otherPersonId).name
-      }.`;
+      return language === "ar"
+        ? `${personName(constraint.personId)} يجب أن يكون يسار ${personName(constraint.otherPersonId)}.`
+        : `${personName(constraint.personId)} must be left of ${personName(constraint.otherPersonId)}.`;
     case "rightOf":
-      return `${getPerson(level, constraint.personId).name} must be right of ${
-        getPerson(level, constraint.otherPersonId).name
-      }.`;
+      return language === "ar"
+        ? `${personName(constraint.personId)} يجب أن يكون يمين ${personName(constraint.otherPersonId)}.`
+        : `${personName(constraint.personId)} must be right of ${personName(constraint.otherPersonId)}.`;
     case "exactSeat":
-      return `${getPerson(level, constraint.personId).name} has claimed seat ${constraint.seatId}.`;
+      return language === "ar"
+        ? `${personName(constraint.personId)} حجز المقعد ${constraint.seatId}.`
+        : `${personName(constraint.personId)} has claimed seat ${constraint.seatId}.`;
     case "groupTogether":
-      return `${constraint.personIds.map((id) => getPerson(level, id).name).join(", ")} want a group photo row.`;
+      return language === "ar"
+        ? `${constraint.personIds.map(personName).join("، ")} يريدون صفًا لصورة جماعية.`
+        : `${constraint.personIds.map(personName).join(", ")} want a group photo row.`;
     case "separatedFromGroup":
-      return `${getPerson(level, constraint.personId).name} needs space from ${constraint.groupPersonIds
-        .map((id) => getPerson(level, id).name)
-        .join(", ")}.`;
+      return language === "ar"
+        ? `${personName(constraint.personId)} يحتاج مساحة بعيدًا عن ${constraint.groupPersonIds.map(personName).join("، ")}.`
+        : `${personName(constraint.personId)} needs space from ${constraint.groupPersonIds.map(personName).join(", ")}.`;
   }
 };
 
@@ -84,49 +108,84 @@ export const evaluateConstraint = (
   level: Level,
   arrangement: Arrangement,
   constraint: Constraint,
+  language: Language = "en",
 ): ConstraintResult => {
   switch (constraint.type) {
     case "seatTag": {
       const person = getPerson(level, constraint.personId);
+      const personText = getPersonText(person, language);
+      const tagText = tagLabels[language][constraint.tag];
       const seat = getSeat(level, getSeatForPerson(arrangement, constraint.personId));
       const passed = Boolean(seat?.tags.includes(constraint.tag));
       return {
         constraint,
         passed,
-        message: passed
-          ? `${person.name} found a ${constraint.tag} seat and is glowing.`
-          : `${person.name} is still hunting for a ${constraint.tag} seat.`,
+        message:
+          language === "ar"
+            ? passed
+              ? `${personText.name} وجد مقعد ${tagText} ويتوهج.`
+              : `${personText.name} ما زال يبحث عن مقعد ${tagText}.`
+            : passed
+              ? `${personText.name} found a ${tagText} seat and is glowing.`
+              : `${personText.name} is still hunting for a ${tagText} seat.`,
       };
     }
     case "notSeatTag": {
       const person = getPerson(level, constraint.personId);
+      const personText = getPersonText(person, language);
+      const tagText = tagLabels[language][constraint.tag];
       const seat = getSeat(level, getSeatForPerson(arrangement, constraint.personId));
       const passed = Boolean(seat && !seat.tags.includes(constraint.tag));
       return {
         constraint,
         passed,
-        message: passed ? `${person.name} avoided the ${constraint.tag} drama.` : `${person.name} refuses this ${constraint.tag} energy.`,
+        message:
+          language === "ar"
+            ? passed
+              ? `${personText.name} تجنب دراما ${tagText}.`
+              : `${personText.name} يرفض طاقة ${tagText}.`
+            : passed
+              ? `${personText.name} avoided the ${tagText} drama.`
+              : `${personText.name} refuses this ${tagText} energy.`,
       };
     }
     case "adjacentTo": {
       const person = getPerson(level, constraint.personId);
       const other = getPerson(level, constraint.otherPersonId);
+      const personText = getPersonText(person, language);
+      const otherText = getPersonText(other, language);
       const passed = arePeopleAdjacent(level, arrangement, constraint.personId, constraint.otherPersonId);
       return {
         constraint,
         passed,
-        message: passed ? `${person.name} and ${other.name} are gossip-distance close.` : `${person.name} wants ${other.name} nearby.`,
+        message:
+          language === "ar"
+            ? passed
+              ? `${personText.name} و${otherText.name} قريبان لمسافة الهمس.`
+              : `${personText.name} يريد ${otherText.name} قريبًا.`
+            : passed
+              ? `${personText.name} and ${otherText.name} are gossip-distance close.`
+              : `${personText.name} wants ${otherText.name} nearby.`,
       };
     }
     case "notAdjacentTo": {
       const person = getPerson(level, constraint.personId);
       const other = getPerson(level, constraint.otherPersonId);
+      const personText = getPersonText(person, language);
+      const otherText = getPersonText(other, language);
       const bothSeated = getSeatForPerson(arrangement, constraint.personId) && getSeatForPerson(arrangement, constraint.otherPersonId);
       const passed = Boolean(bothSeated && !arePeopleAdjacent(level, arrangement, constraint.personId, constraint.otherPersonId));
       return {
         constraint,
         passed,
-        message: passed ? `${person.name} has escaped ${other.name}'s elbow zone.` : `${person.name} says ${other.name} is too close.`,
+        message:
+          language === "ar"
+            ? passed
+              ? `${personText.name} هرب من منطقة أكواع ${otherText.name}.`
+              : `${personText.name} يقول إن ${otherText.name} قريب جدًا.`
+            : passed
+              ? `${personText.name} has escaped ${otherText.name}'s elbow zone.`
+              : `${personText.name} says ${otherText.name} is too close.`,
       };
     }
     case "leftOf":
@@ -144,20 +203,28 @@ export const evaluateConstraint = (
       return {
         constraint,
         passed,
-        message: relativeMessage(person, other, constraint.type === "leftOf" ? "left" : "right", passed),
+        message: relativeMessage(person, other, constraint.type === "leftOf" ? "left" : "right", passed, language),
       };
     }
     case "exactSeat": {
       const person = getPerson(level, constraint.personId);
+      const personText = getPersonText(person, language);
       const passed = getSeatForPerson(arrangement, constraint.personId) === constraint.seatId;
       return {
         constraint,
         passed,
-        message: passed ? `${person.name} is in the throne they demanded.` : `${person.name} is pointing at seat ${constraint.seatId}.`,
+        message:
+          language === "ar"
+            ? passed
+              ? `${personText.name} جلس على عرشه المطلوب.`
+              : `${personText.name} يشير إلى المقعد ${constraint.seatId}.`
+            : passed
+              ? `${personText.name} is in the throne they demanded.`
+              : `${personText.name} is pointing at seat ${constraint.seatId}.`,
       };
     }
     case "groupTogether": {
-      const names = constraint.personIds.map((id) => getPerson(level, id).name).join(", ");
+      const names = constraint.personIds.map((id) => getPersonText(getPerson(level, id), language).name).join(language === "ar" ? "، " : ", ");
       const positions = constraint.personIds.map((id) => getPosition(level, arrangement, id));
       const allSeated = positions.every(Boolean);
       const rows = new Set(positions.map((position) => position?.row));
@@ -170,26 +237,41 @@ export const evaluateConstraint = (
       return {
         constraint,
         passed,
-        message: passed ? `${names} nailed the group pose.` : `${names} want to sit in one connected row.`,
+        message:
+          language === "ar"
+            ? passed
+              ? `${names} أتقنوا وضعية الصورة.`
+              : `${names} يريدون الجلوس في صف متصل.`
+            : passed
+              ? `${names} nailed the group pose.`
+              : `${names} want to sit in one connected row.`,
       };
     }
     case "separatedFromGroup": {
       const person = getPerson(level, constraint.personId);
+      const personText = getPersonText(person, language);
       const allRelevantPeople = [constraint.personId, ...constraint.groupPersonIds];
       const allSeated = allRelevantPeople.every((id) => getSeatForPerson(arrangement, id));
       const hasNeighbor = constraint.groupPersonIds.some((id) => arePeopleAdjacent(level, arrangement, constraint.personId, id));
       return {
         constraint,
         passed: Boolean(allSeated && !hasNeighbor),
-        message: hasNeighbor ? `${person.name} needs a tiny bubble of peace.` : `${person.name} has enough breathing room.`,
+        message:
+          language === "ar"
+            ? hasNeighbor
+              ? `${personText.name} يحتاج فقاعة صغيرة من الهدوء.`
+              : `${personText.name} لديه مساحة كافية للتنفس.`
+            : hasNeighbor
+              ? `${personText.name} needs a tiny bubble of peace.`
+              : `${personText.name} has enough breathing room.`,
       };
     }
   }
 };
 
-export const evaluateLevel = (level: Level, arrangement: Arrangement): LevelResult => {
+export const evaluateLevel = (level: Level, arrangement: Arrangement, language: Language = "en"): LevelResult => {
   const allPeopleSeated = level.people.every((person) => getSeatForPerson(arrangement, person.id));
-  const results = level.constraints.map((constraint) => evaluateConstraint(level, arrangement, constraint));
+  const results = level.constraints.map((constraint) => evaluateConstraint(level, arrangement, constraint, language));
 
   return {
     complete: allPeopleSeated && results.every((result) => result.passed),

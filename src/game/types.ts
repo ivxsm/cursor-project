@@ -9,11 +9,23 @@ export type SeatTag =
 
 export type SeatId = string;
 export type PersonId = string;
+export type Language = "en" | "ar";
 
 export type CharacterVisual = {
   species: "blob" | "robot" | "cat" | "ghost" | "cactus" | "duck";
   accessory: "glasses" | "window" | "steam" | "juggler" | "headphones" | "camera";
   mood: "cool" | "dreamy" | "grumpy" | "bouncy" | "chill" | "sparkly";
+};
+
+export type LocalizedPersonText = {
+  name: string;
+  personality: string;
+  catchphrase: string;
+};
+
+export type LocalizedLevelText = {
+  title: string;
+  subtitle: string;
 };
 
 export type Seat = {
@@ -32,6 +44,7 @@ export type Person = {
   personality: string;
   catchphrase: string;
   visual: CharacterVisual;
+  localized?: Partial<Record<Language, LocalizedPersonText>>;
 };
 
 export type SeatTagConstraint = {
@@ -99,6 +112,7 @@ export type Level = {
   seats: Seat[];
   people: Person[];
   constraints: Constraint[];
+  localized?: Partial<Record<Language, LocalizedLevelText>>;
 };
 
 export type Arrangement = Record<SeatId, PersonId | null>;

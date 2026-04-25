@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
 import type { CSSProperties } from "react";
-import type { Person } from "../game/types";
+import type { Language, Person } from "../game/types";
+import { getPersonText } from "../i18n";
 
 type PersonTokenProps = {
   person: Person;
+  language: Language;
   selected?: boolean;
   compact?: boolean;
   seated?: boolean;
@@ -14,6 +16,7 @@ type PersonTokenProps = {
 
 export function PersonToken({
   person,
+  language,
   selected,
   compact,
   seated,
@@ -22,6 +25,7 @@ export function PersonToken({
   onDragStart,
 }: PersonTokenProps) {
   const { species, accessory, mood } = person.visual;
+  const personText = getPersonText(person, language);
 
   return (
     <motion.button
@@ -50,8 +54,8 @@ export function PersonToken({
         </span>
       </span>
       <span className="person-info">
-        <strong>{person.name}</strong>
-        {!compact && <small>{person.catchphrase}</small>}
+        <strong>{personText.name}</strong>
+        {!compact && <small>{personText.catchphrase}</small>}
       </span>
     </motion.button>
   );

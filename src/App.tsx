@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { levels } from "./game/levels";
 import { completeLevel, loadProgress, saveProgress } from "./game/progress";
-import type { ProgressState } from "./game/types";
+import type { Language, ProgressState } from "./game/types";
+import { getDirection, loadLanguage, saveLanguage } from "./i18n";
 import { GameScreen } from "./screens/GameScreen";
 import { LevelSelect } from "./screens/LevelSelect";
 import { MainMenu } from "./screens/MainMenu";
@@ -13,6 +14,7 @@ function App() {
   const [screen, setScreen] = useState<Screen>("menu");
   const [selectedLevelId, setSelectedLevelId] = useState(levels[0].id);
   const [progress, setProgress] = useState<ProgressState>(() => loadProgress());
+  const [language, setLanguage] = useState<Language>(() => loadLanguage());
 
   const selectedLevelIndex = levels.findIndex((level) => level.id === selectedLevelId);
   const selectedLevel = levels[selectedLevelIndex] ?? levels[0];
@@ -28,6 +30,16 @@ function App() {
   useEffect(() => {
     saveProgress(progress);
   }, [progress]);
+
+  useEffect(() => {
+    saveLanguage(language);
+    document.documentElement.lang = language;
+    document.documentElement.dir = getDirection(language);
+  }, [language]);
+
+  const toggleLanguage = () => {
+    setLanguage((current) => (current === "en" ? "ar" : "en"));
+  };
 
   const handleStart = () => {
     setSelectedLevelId(firstPlayableLevelId);
@@ -51,13 +63,23 @@ function App() {
   };
 
   if (screen === "menu") {
-    return <MainMenu onStart={handleStart} completedCount={progress.completedLevelIds.length} levelCount={levels.length} />;
+    return (
+      <MainMenu
+        onStart={handleStart}
+        completedCount={progress.completedLevelIds.length}
+        levelCount={levels.length}
+        language={language}
+        onToggleLanguage={toggleLanguage}
+      />
+    );
   }
 
   if (screen === "levels") {
     return (
       <LevelSelect
         progress={progress}
+        language={language}
+        onToggleLanguage={toggleLanguage}
         onSelectLevel={(levelId) => {
           setSelectedLevelId(levelId);
           setScreen("game");
@@ -72,13 +94,14 @@ function App() {
       <WinScreen
         level={selectedLevel}
         hasNextLevel={hasNextLevel}
+        language={language}
         onNext={handleNext}
         onLevels={() => setScreen("levels")}
       />
     );
   }
 
-  return <GameScreen level={selectedLevel} onComplete={handleCompleteLevel} onBack={() => setScreen("levels")} />;
+  return <GameScreen level={selectedLevel} language={language} onComplete={handleCompleteLevel} onBack={() => setScreen("levels")} />;
 }
 
 export default App;

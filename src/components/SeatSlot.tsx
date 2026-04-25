@@ -1,10 +1,12 @@
 import { motion } from "framer-motion";
-import type { Person, Seat } from "../game/types";
+import type { Language, Person, Seat } from "../game/types";
+import { getPersonText, tagLabels, ui } from "../i18n";
 import { PersonToken } from "./PersonToken";
 
 type SeatSlotProps = {
   seat: Seat;
   person?: Person;
+  language: Language;
   selectedPersonId: string | null;
   onSeatClick: (seatId: string) => void;
   onPersonClick: (personId: string) => void;
@@ -15,6 +17,7 @@ type SeatSlotProps = {
 export function SeatSlot({
   seat,
   person,
+  language,
   selectedPersonId,
   onSeatClick,
   onPersonClick,
@@ -22,6 +25,8 @@ export function SeatSlot({
   onDragPerson,
 }: SeatSlotProps) {
   const isSelectedPassenger = Boolean(person && selectedPersonId === person.id);
+  const personText = person ? getPersonText(person, language) : null;
+  const text = ui[language];
 
   return (
     <motion.div
@@ -38,13 +43,13 @@ export function SeatSlot({
           onSeatClick(seat.id);
         }
       }}
-      aria-label={`Seat ${seat.label}${person ? ` occupied by ${person.name}` : ""}`}
+      aria-label={`Seat ${seat.label}${personText ? ` occupied by ${personText.name}` : ""}`}
     >
       <span className="seat-frame">
         <span className="seat-headrest" />
         <span className="seat-back">
           <span className="seat-label">{seat.label}</span>
-          <span className="seat-tags">{seat.tags.join(" · ")}</span>
+          <span className="seat-tags">{seat.tags.map((tag) => tagLabels[language][tag]).join(" · ")}</span>
         </span>
         <span className="seat-arm left" />
         <span className="seat-arm right" />
@@ -60,6 +65,7 @@ export function SeatSlot({
       {person ? (
         <PersonToken
           person={person}
+          language={language}
           selected={selectedPersonId === person.id}
           compact
           seated
@@ -67,7 +73,7 @@ export function SeatSlot({
           onDragStart={() => onDragPerson(person.id)}
         />
       ) : (
-        <span className="empty-seat">Open seat</span>
+        <span className="empty-seat">{text.openSeat}</span>
       )}
     </motion.div>
   );

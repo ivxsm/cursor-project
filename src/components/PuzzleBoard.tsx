@@ -2,7 +2,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 import { createEmptyArrangement, evaluateLevel } from "../game/constraints";
-import type { Arrangement, Level, PersonId, SeatId } from "../game/types";
+import type { Arrangement, Language, Level, PersonId, SeatId } from "../game/types";
+import { getLevelText, getPersonText, ui } from "../i18n";
 import { ConstraintCard } from "./ConstraintCard";
 import { FeedbackBubble } from "./FeedbackBubble";
 import { PersonToken } from "./PersonToken";
@@ -11,22 +12,26 @@ import { ThreeScene } from "./ThreeScene";
 
 type PuzzleBoardProps = {
   level: Level;
+  language: Language;
   onComplete: () => void;
 };
 
 const getArrangementKey = (level: Level) => level.id;
 
-export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
+export function PuzzleBoard({ level, language, onComplete }: PuzzleBoardProps) {
   const [arrangements, setArrangements] = useState<Record<string, Arrangement>>({});
   const [selectedPersonId, setSelectedPersonId] = useState<PersonId | null>(null);
   const [showResults, setShowResults] = useState(false);
 
   const arrangement = arrangements[getArrangementKey(level)] ?? createEmptyArrangement(level);
-  const evaluation = useMemo(() => evaluateLevel(level, arrangement), [arrangement, level]);
+  const evaluation = useMemo(() => evaluateLevel(level, arrangement, language), [arrangement, language, level]);
   const seatedPersonIds = new Set(Object.values(arrangement).filter(Boolean));
   const unseatedPeople = level.people.filter((person) => !seatedPersonIds.has(person.id));
-  const failingMessage = evaluation.results.find((result) => !result.passed)?.message ?? "Everyone is secretly delighted.";
+  const text = ui[language];
+  const levelText = getLevelText(level, language);
+  const failingMessage = evaluation.results.find((result) => !result.passed)?.message ?? text.busApplause;
   const selectedPerson = level.people.find((person) => person.id === selectedPersonId);
+  const selectedPersonText = selectedPerson ? getPersonText(selectedPerson, language) : null;
   const rowCount = Math.max(...level.seats.map((seat) => seat.row)) + 1;
   const columnCount = Math.max(...level.seats.map((seat) => seat.column)) + 1;
   const visualColumnCount = Math.min(columnCount, 3);
@@ -101,11 +106,11 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
       <div className="board-panel">
         <div className="board-header">
           <div>
-            <p className="eyebrow">Level {level.id.replace("level-", "")}</p>
-            <h2>{level.title}</h2>
-            <p>{level.subtitle}</p>
+            <p className="eyebrow">{language === "ar" ? `المرحلة ${level.id.replace("level-", "")}` : `Level ${level.id.replace("level-", "")}`}</p>
+            <h2>{levelText.title}</h2>
+            <p>{levelText.subtitle}</p>
           </div>
-          <span className="difficulty">Difficulty {level.difficulty}/5</span>
+          <span className="difficulty">{text.difficultyFull(level.difficulty)}</span>
         </div>
 
         <div className={`bus-stage ${showResults && !evaluation.complete ? "needs-attention" : ""}`}>
@@ -116,7 +121,7 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
             <div className="bus-front">
               <span className="dashboard-light red" />
               <div className="windshield">
-                <span className="bus-route">Route LOL-404</span>
+                <span className="bus-route">{text.route}</span>
                 <span className="road-reflection" />
               </div>
               <div className="driver-corner">
@@ -154,6 +159,7 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
                     key={seat.id}
                     seat={seat}
                     person={person}
+                    language={language}
                     selectedPersonId={selectedPersonId}
                     onSeatClick={handleSeatClick}
                     onPersonClick={(personId) => {
@@ -170,7 +176,7 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
               })}
             </div>
             <div className="bus-aisle cabin-aisle">
-              <span>aisle</span>
+              <span>{text.aisle}</span>
             </div>
             <div className="bus-floor-lines" />
             <div className="bus-wheels cabin-wheels">
@@ -183,10 +189,10 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
         <div className="bench character-dock">
           <div className="dock-heading">
             <div>
-              <p className="eyebrow">Casting call</p>
-              <h3>Waiting creatures</h3>
+              <p className="eyebrow">{text.castingCall}</p>
+              <h3>{text.waitingCreatures}</h3>
             </div>
-            {selectedPerson && <span className="selected-callout">{selectedPerson.catchphrase}</span>}
+            {selectedPersonText && <span className="selected-callout">{selectedPersonText.catchphrase}</span>}
           </div>
           <div className="bench-list">
             <AnimatePresence>
@@ -194,6 +200,7 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
                 <PersonToken
                   key={person.id}
                   person={person}
+                  language={language}
                   selected={selectedPersonId === person.id}
                   onClick={() => handlePersonClick(person.id)}
                   onDragStart={() => setSelectedPersonId(person.id)}
@@ -205,33 +212,46 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
 
         <div className="board-actions">
           <button type="button" className="secondary-button" onClick={resetLevel}>
-            Reset chaos
+            {text.resetChaos}
           </button>
           <button type="button" className="primary-button" onClick={checkLevel}>
-            Check seating
+            {text.checkSeating}
           </button>
         </div>
       </div>
 
       <aside className="rules-panel">
-        <p className="eyebrow">Mission cards</p>
-        <h3>Passenger demands</h3>
+        <p className="eyebrow">{text.missionCards}</p>
+        <h3>{text.passengerDemands}</h3>
         <div className="constraint-list">
           {evaluation.results.map((result, index) => (
-            <ConstraintCard key={`${result.constraint.type}-${index}`} level={level} result={result} showStatus={showResults} />
+            <ConstraintCard
+              key={`${result.constraint.type}-${index}`}
+              level={level}
+              result={result}
+              showStatus={showResults}
+              language={language}
+            />
           ))}
         </div>
         <div className="speech-wrap">
           {selectedPerson && (
-            <PersonToken person={selectedPerson} compact seated draggable={false} selected={Boolean(selectedPersonId)} />
+            <PersonToken
+              person={selectedPerson}
+              language={language}
+              compact
+              seated
+              draggable={false}
+              selected={Boolean(selectedPersonId)}
+            />
           )}
           <FeedbackBubble
             message={
               showResults
                 ? failingMessage
                 : selectedPerson
-                  ? `${selectedPerson.name}: ${selectedPerson.catchphrase}`
-                  : "Grab a creature, drop them in the bus, then check the seating."
+                  ? text.selectedFeedback(selectedPersonText?.name ?? selectedPerson.name, selectedPersonText?.catchphrase ?? selectedPerson.catchphrase)
+                  : text.defaultFeedback
             }
           />
         </div>
@@ -240,8 +260,8 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
       {showResults && evaluation.complete && (
         <motion.div className="win-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <motion.div initial={{ scale: 0.85, y: 20 }} animate={{ scale: 1, y: 0 }}>
-            <strong>Perfect seating!</strong>
-            <span>The bus applauds politely.</span>
+            <strong>{text.perfectSeating}</strong>
+            <span>{text.busApplause}</span>
           </motion.div>
         </motion.div>
       )}
