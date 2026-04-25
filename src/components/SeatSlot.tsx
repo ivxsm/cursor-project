@@ -26,7 +26,6 @@ export function SeatSlot({
   return (
     <motion.div
       className={`seat-slot ${person ? "occupied" : ""} ${isSelectedPassenger ? "selected-passenger" : ""}`}
-      style={{ gridColumn: seat.column + 1, gridRow: seat.row + 1 }}
       onDragOver={(event) => event.preventDefault()}
       onDrop={() => onDropPerson(seat.id)}
       onClick={() => onSeatClick(seat.id)}
@@ -41,13 +40,22 @@ export function SeatSlot({
       }}
       aria-label={`Seat ${seat.label}${person ? ` occupied by ${person.name}` : ""}`}
     >
-      <span className="seat-back">
-        <span className="seat-label">Seat {seat.label}</span>
-        <span className="seat-tags">{seat.tags.join(" · ")}</span>
-      </span>
-      <span className="seat-cushion">
-        <span className="seat-belt left" />
-        <span className="seat-belt right" />
+      <span className="seat-frame">
+        <span className="seat-headrest" />
+        <span className="seat-back">
+          <span className="seat-label">{seat.label}</span>
+          <span className="seat-tags">{seat.tags.join(" · ")}</span>
+        </span>
+        <span className="seat-arm left" />
+        <span className="seat-arm right" />
+        <span className="seat-cushion">
+          <span className="seat-belt left" />
+          <span className="seat-belt right" />
+        </span>
+        <span className="seat-base">
+          <span />
+          <span />
+        </span>
       </span>
       {person ? (
         <PersonToken

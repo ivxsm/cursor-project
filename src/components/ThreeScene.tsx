@@ -30,6 +30,47 @@ function Mascot({ x, color, speed }: { x: number; color: string; speed: number }
   );
 }
 
+function CabinMotion() {
+  const stripeRef = useRef<Group>(null);
+
+  useFrame((state) => {
+    if (stripeRef.current) {
+      stripeRef.current.position.x = Math.sin(state.clock.elapsedTime * 1.8) * 0.18;
+    }
+  });
+
+  return (
+    <group ref={stripeRef} position={[0, -0.58, 0.18]}>
+      <mesh position={[0, 0.86, -0.2]}>
+        <boxGeometry args={[4.8, 0.08, 0.12]} />
+        <meshStandardMaterial color="#172033" roughness={0.4} />
+      </mesh>
+      {[-1.6, -0.55, 0.55, 1.6].map((x) => (
+        <group key={x} position={[x, 0.58, -0.1]}>
+          <mesh>
+            <cylinderGeometry args={[0.025, 0.025, 0.55, 12]} />
+            <meshStandardMaterial color="#172033" />
+          </mesh>
+          <mesh position={[0, -0.34, 0]}>
+            <torusGeometry args={[0.13, 0.024, 8, 20]} />
+            <meshStandardMaterial color="#ffd166" />
+          </mesh>
+        </group>
+      ))}
+      {[-1.8, -0.6, 0.6, 1.8].map((x) => (
+        <mesh key={x} position={[x, -0.22, 0.45]} rotation={[-0.55, 0, 0]}>
+          <boxGeometry args={[0.42, 0.56, 0.22]} />
+          <meshStandardMaterial color="#36506b" roughness={0.62} />
+        </mesh>
+      ))}
+      <mesh position={[0, -0.72, 0.04]}>
+        <boxGeometry args={[5.1, 0.16, 1.65]} />
+        <meshStandardMaterial color="#8a5b3d" roughness={0.85} />
+      </mesh>
+    </group>
+  );
+}
+
 function WobbleBus({ compact = false }: { compact?: boolean }) {
   const busRef = useRef<Group>(null);
   const wheelRef = useRef<Mesh>(null);
@@ -94,6 +135,7 @@ function WobbleBus({ compact = false }: { compact?: boolean }) {
       <Mascot x={-0.92} color="#5ec8ff" speed={2.1} />
       <Mascot x={0.08} color="#ff7aa8" speed={2.5} />
       <Mascot x={0.98} color="#95e06c" speed={1.8} />
+      {compact && <CabinMotion />}
     </group>
   );
 }

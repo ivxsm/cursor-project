@@ -29,6 +29,7 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
   const selectedPerson = level.people.find((person) => person.id === selectedPersonId);
   const rowCount = Math.max(...level.seats.map((seat) => seat.row)) + 1;
   const columnCount = Math.max(...level.seats.map((seat) => seat.column)) + 1;
+  const visualColumnCount = Math.min(columnCount, 3);
 
   const updateArrangement = (updater: (current: Arrangement) => Arrangement) => {
     setArrangements((current) => ({
@@ -111,13 +112,25 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
           <div className="bus-atmosphere">
             <ThreeScene compact />
           </div>
-          <div className="bus-shell">
-            <div className="bus-roof">
-              <span className="bus-light red" />
-              <span className="bus-route">Route LOL-404</span>
-              <span className="bus-light green" />
+          <div className="bus-shell bus-cabin">
+            <div className="bus-front">
+              <span className="dashboard-light red" />
+              <div className="windshield">
+                <span className="bus-route">Route LOL-404</span>
+                <span className="road-reflection" />
+              </div>
+              <div className="driver-corner">
+                <span className="steering-wheel" />
+                <span className="dashboard-light green" />
+              </div>
             </div>
-            <div className="bus-windows">
+            <div className="bus-rail top">
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="bus-windows side-windows">
               <span />
               <span />
               <span />
@@ -127,7 +140,7 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
               className={`seat-grid rows-${rowCount}`}
               style={
                 {
-                  "--seat-columns": columnCount,
+                  "--seat-columns": visualColumnCount,
                   "--seat-rows": rowCount,
                 } as CSSProperties
               }
@@ -156,10 +169,11 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
                 );
               })}
             </div>
-            <div className="bus-aisle">
-              <span>tiny aisle of big opinions</span>
+            <div className="bus-aisle cabin-aisle">
+              <span>aisle</span>
             </div>
-            <div className="bus-wheels">
+            <div className="bus-floor-lines" />
+            <div className="bus-wheels cabin-wheels">
               <span />
               <span />
             </div>
