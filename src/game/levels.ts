@@ -1,0 +1,182 @@
+import type { Level, Person } from "./types";
+
+const characters: Record<string, Person> = {
+  mido: {
+    id: "mido",
+    name: "Mido",
+    color: "#5ec8ff",
+    emoji: "😎",
+    personality: "Believes the middle seat has main-character lighting.",
+    catchphrase: "The center is my stage.",
+  },
+  nora: {
+    id: "nora",
+    name: "Nora",
+    color: "#ff9f6e",
+    emoji: "🪟",
+    personality: "Needs a window for dramatic music-video staring.",
+    catchphrase: "I must gaze into destiny.",
+  },
+  zed: {
+    id: "zed",
+    name: "Zed",
+    color: "#c99cff",
+    emoji: "😤",
+    personality: "Runs a strict no-elbow-contact policy.",
+    catchphrase: "Personal space is a lifestyle.",
+  },
+  bobo: {
+    id: "bobo",
+    name: "Bobo",
+    color: "#ffd166",
+    emoji: "🤹",
+    personality: "Can only focus beside a best friend.",
+    catchphrase: "Buddy system or chaos.",
+  },
+  lulu: {
+    id: "lulu",
+    name: "Lulu",
+    color: "#95e06c",
+    emoji: "🎧",
+    personality: "Claims the quiet zone for premium playlist listening.",
+    catchphrase: "Shhh, the beat is thinking.",
+  },
+  gigi: {
+    id: "gigi",
+    name: "Gigi",
+    color: "#ff7aa8",
+    emoji: "📸",
+    personality: "Needs the group seated perfectly for photos.",
+    catchphrase: "Everybody squeeze in.",
+  },
+};
+
+const row = (prefix: string, count: number, rowIndex = 0) =>
+  Array.from({ length: count }, (_, index) => ({
+    id: `${prefix}-${index + 1}`,
+    label: `${index + 1}`,
+    row: rowIndex,
+    column: index,
+    tags: [
+      index === 0 || index === count - 1 ? "window" : undefined,
+      count % 2 === 1 && index === Math.floor(count / 2) ? "middle" : undefined,
+      index === 1 || index === count - 2 ? "aisle" : undefined,
+    ].filter(Boolean) as Level["seats"][number]["tags"],
+  }));
+
+const busRows = () => [
+  ...row("front", 3, 0).map((seat) => ({ ...seat, tags: [...seat.tags, "front" as const] })),
+  ...row("back", 3, 1).map((seat) => ({ ...seat, tags: [...seat.tags, "back" as const] })),
+];
+
+export const levels: Level[] = [
+  {
+    id: "level-1",
+    title: "Middle Lover",
+    subtitle: "Mido wants the seat with maximum spotlight.",
+    difficulty: 1,
+    seats: row("seat", 3),
+    people: [characters.mido, characters.nora, characters.zed],
+    constraints: [{ type: "seatTag", personId: "mido", tag: "middle" }],
+  },
+  {
+    id: "level-2",
+    title: "Window Fan",
+    subtitle: "Nora requires a view for her emotional staring routine.",
+    difficulty: 1,
+    seats: row("seat", 3),
+    people: [characters.nora, characters.mido, characters.bobo],
+    constraints: [{ type: "seatTag", personId: "nora", tag: "window" }],
+  },
+  {
+    id: "level-3",
+    title: "No Neighbors",
+    subtitle: "Zed cannot risk accidental elbow conversation.",
+    difficulty: 1,
+    seats: row("seat", 3),
+    people: [characters.nora, characters.zed, characters.bobo],
+    constraints: [{ type: "notAdjacentTo", personId: "nora", otherPersonId: "zed" }],
+  },
+  {
+    id: "level-4",
+    title: "Best Friends",
+    subtitle: "Bobo needs a hype person within whisper range.",
+    difficulty: 2,
+    seats: row("seat", 4),
+    people: [characters.bobo, characters.gigi, characters.zed, characters.lulu],
+    constraints: [{ type: "adjacentTo", personId: "bobo", otherPersonId: "gigi" }],
+  },
+  {
+    id: "level-5",
+    title: "Left Side Energy",
+    subtitle: "Gigi says the camera angle only works from the left.",
+    difficulty: 2,
+    seats: row("seat", 4),
+    people: [characters.gigi, characters.mido, characters.nora, characters.zed],
+    constraints: [{ type: "leftOf", personId: "gigi", otherPersonId: "mido" }],
+  },
+  {
+    id: "level-6",
+    title: "Drama Triangle",
+    subtitle: "The middle seat is sacred, but the elbow feud continues.",
+    difficulty: 2,
+    seats: row("seat", 3),
+    people: [characters.mido, characters.nora, characters.zed],
+    constraints: [
+      { type: "seatTag", personId: "mido", tag: "middle" },
+      { type: "notAdjacentTo", personId: "nora", otherPersonId: "zed" },
+    ],
+  },
+  {
+    id: "level-7",
+    title: "Double Window Trouble",
+    subtitle: "Everyone has opinions. The windows have filed a complaint.",
+    difficulty: 3,
+    seats: row("seat", 5),
+    people: [characters.nora, characters.lulu, characters.mido, characters.zed, characters.bobo],
+    constraints: [
+      { type: "seatTag", personId: "nora", tag: "window" },
+      { type: "seatTag", personId: "lulu", tag: "window" },
+      { type: "notSeatTag", personId: "zed", tag: "middle" },
+    ],
+  },
+  {
+    id: "level-8",
+    title: "Group Chat",
+    subtitle: "The photo squad must sit as one connected blob.",
+    difficulty: 3,
+    seats: row("seat", 5),
+    people: [characters.gigi, characters.bobo, characters.mido, characters.lulu, characters.zed],
+    constraints: [{ type: "groupTogether", personIds: ["gigi", "bobo", "mido"] }],
+  },
+  {
+    id: "level-9",
+    title: "Quiet Zone",
+    subtitle: "Lulu likes the playlist, not the commentary track.",
+    difficulty: 4,
+    seats: row("seat", 5).map((seat) => ({
+      ...seat,
+      tags: seat.id === "seat-1" || seat.id === "seat-5" ? [...seat.tags, "quiet"] : seat.tags,
+    })),
+    people: [characters.lulu, characters.gigi, characters.bobo, characters.mido, characters.zed],
+    constraints: [
+      { type: "seatTag", personId: "lulu", tag: "quiet" },
+      { type: "separatedFromGroup", personId: "lulu", groupPersonIds: ["gigi", "bobo"] },
+    ],
+  },
+  {
+    id: "level-10",
+    title: "Bus Chaos",
+    subtitle: "Two rows, six passengers, zero chill.",
+    difficulty: 5,
+    seats: busRows(),
+    people: [characters.nora, characters.mido, characters.zed, characters.bobo, characters.lulu, characters.gigi],
+    constraints: [
+      { type: "seatTag", personId: "nora", tag: "window" },
+      { type: "seatTag", personId: "mido", tag: "middle" },
+      { type: "notAdjacentTo", personId: "zed", otherPersonId: "bobo" },
+      { type: "adjacentTo", personId: "gigi", otherPersonId: "lulu" },
+      { type: "rightOf", personId: "bobo", otherPersonId: "nora" },
+    ],
+  },
+];
