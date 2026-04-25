@@ -10,6 +10,12 @@ export type SeatTag =
 export type SeatId = string;
 export type PersonId = string;
 
+export type CharacterVisual = {
+  species: "blob" | "robot" | "cat" | "ghost" | "cactus" | "duck";
+  accessory: "glasses" | "window" | "steam" | "juggler" | "headphones" | "camera";
+  mood: "cool" | "dreamy" | "grumpy" | "bouncy" | "chill" | "sparkly";
+};
+
 export type Seat = {
   id: SeatId;
   label: string;
@@ -25,6 +31,7 @@ export type Person = {
   emoji: string;
   personality: string;
   catchphrase: string;
+  visual: CharacterVisual;
 };
 
 export type SeatTagConstraint = {

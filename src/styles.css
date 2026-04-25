@@ -497,3 +497,787 @@ h2 {
     width: 100%;
   }
 }
+
+/* Game-feel upgrade: overrides the functional board with a playful bus scene. */
+.game-layout {
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+.board-panel.game-panel,
+.board-panel {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 249, 232, 0.92)),
+    repeating-linear-gradient(90deg, rgba(255, 209, 102, 0.12) 0 18px, transparent 18px 36px);
+}
+
+.bus-stage {
+  position: relative;
+  min-height: 450px;
+  padding: 34px 22px 40px;
+  border: 3px solid #172033;
+  border-radius: 38px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 12%, rgba(255, 255, 255, 0.7), transparent 16rem),
+    linear-gradient(160deg, #c9f0ff, #fff4c6 54%, #ffd9a8);
+  box-shadow: inset 0 -18px 0 rgba(23, 32, 51, 0.08);
+}
+
+.bus-stage.needs-attention {
+  animation: stage-shake 420ms ease;
+}
+
+.bus-atmosphere {
+  position: absolute;
+  inset: 0;
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+.bus-atmosphere .three-scene.compact {
+  height: 100%;
+  min-height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.bus-shell {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 24px 34px;
+  border: 4px solid #172033;
+  border-radius: 42px 42px 32px 32px;
+  background:
+    linear-gradient(180deg, rgba(255, 209, 102, 0.92), rgba(255, 159, 110, 0.92)),
+    #ffd166;
+  box-shadow: 12px 14px 0 #172033;
+}
+
+.bus-roof,
+.bus-wheels,
+.bus-windows {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bus-roof {
+  margin-bottom: 14px;
+  color: #172033;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bus-route {
+  padding: 8px 16px;
+  border: 3px solid #172033;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 4px 4px 0 #172033;
+  font-size: 0.72rem;
+}
+
+.bus-light {
+  width: 18px;
+  height: 18px;
+  border: 3px solid #172033;
+  border-radius: 999px;
+  box-shadow: 2px 2px 0 #172033;
+  animation: bus-blink 1.3s infinite alternate;
+}
+
+.bus-light.red {
+  background: #ff7aa8;
+}
+
+.bus-light.green {
+  background: #95e06c;
+  animation-delay: 400ms;
+}
+
+.bus-windows {
+  margin-bottom: 18px;
+}
+
+.bus-windows span {
+  flex: 1;
+  min-height: 52px;
+  border: 3px solid #172033;
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.86), transparent 42%),
+    #a7e9ff;
+  box-shadow: inset 0 -8px 0 rgba(23, 32, 51, 0.09);
+}
+
+.seat-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--seat-columns, 3), minmax(118px, 1fr));
+  grid-template-rows: repeat(var(--seat-rows, 1), minmax(160px, auto));
+  gap: 20px;
+  padding: 22px;
+  border: 0;
+  border-radius: 30px;
+  background:
+    linear-gradient(90deg, transparent 0 45%, rgba(255, 255, 255, 0.34) 45% 55%, transparent 55%),
+    rgba(255, 248, 218, 0.76);
+}
+
+.seat-grid::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  border: 3px dashed rgba(23, 32, 51, 0.2);
+  border-radius: 24px;
+  pointer-events: none;
+}
+
+.seat-slot {
+  position: relative;
+  min-height: 158px;
+  padding: 0;
+  border: 0;
+  border-radius: 24px;
+  background: transparent;
+  cursor: pointer;
+  isolation: isolate;
+}
+
+.seat-slot::after {
+  content: "";
+  position: absolute;
+  inset: auto 12px 8px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(23, 32, 51, 0.2);
+  filter: blur(2px);
+  z-index: -1;
+}
+
+.seat-slot.occupied,
+.seat-slot.selected-passenger {
+  background: transparent;
+}
+
+.seat-slot.selected-passenger .seat-back,
+.seat-slot:hover .seat-back {
+  transform: translateY(-5px) rotate(-1deg);
+}
+
+.seat-back,
+.seat-cushion {
+  display: block;
+  border: 3px solid #172033;
+  background: #36506b;
+}
+
+.seat-back {
+  min-height: 82px;
+  padding: 14px 12px;
+  border-radius: 24px 24px 14px 14px;
+  color: #ffffff;
+  box-shadow: 5px 5px 0 #172033;
+  transition: transform 180ms ease;
+}
+
+.seat-cushion {
+  position: relative;
+  width: 86%;
+  min-height: 52px;
+  margin: -8px auto 0;
+  border-radius: 16px 16px 26px 26px;
+  background: #4e6c8b;
+  box-shadow: 4px 5px 0 #172033;
+}
+
+.seat-belt {
+  position: absolute;
+  top: 20px;
+  width: 34%;
+  height: 5px;
+  border-radius: 999px;
+  background: #ffd166;
+}
+
+.seat-belt.left {
+  left: 10px;
+  transform: rotate(18deg);
+}
+
+.seat-belt.right {
+  right: 10px;
+  transform: rotate(-18deg);
+}
+
+.seat-label,
+.seat-tags {
+  color: inherit;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+}
+
+.seat-tags {
+  opacity: 0.86;
+}
+
+.empty-seat {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -30%);
+  width: max-content;
+  max-width: 110px;
+  margin: 0;
+  padding: 7px 10px;
+  border: 2px dashed rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  background: rgba(23, 32, 51, 0.28);
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.bus-aisle {
+  margin: 12px auto 0;
+  width: fit-content;
+  padding: 7px 14px;
+  border: 2px solid rgba(23, 32, 51, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.42);
+  color: #5d4530;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.bus-wheels {
+  position: absolute;
+  left: 15%;
+  right: 15%;
+  bottom: -20px;
+}
+
+.bus-wheels span {
+  width: 54px;
+  height: 54px;
+  border: 5px solid #172033;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #ffffff 0 22%, #172033 23% 36%, #2b344a 37%);
+}
+
+.character-dock {
+  margin-top: 28px;
+  padding: 18px;
+  border: 3px solid #172033;
+  border-radius: 30px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.4)),
+    repeating-linear-gradient(45deg, rgba(255, 122, 168, 0.12) 0 12px, rgba(255, 209, 102, 0.12) 12px 24px);
+  box-shadow: inset 0 -8px 0 rgba(23, 32, 51, 0.08);
+}
+
+.dock-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.dock-heading h3 {
+  margin-bottom: 0;
+}
+
+.selected-callout {
+  max-width: 240px;
+  padding: 8px 12px;
+  border: 2px solid #172033;
+  border-radius: 999px;
+  background: #ffd166;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.bench-list {
+  align-items: end;
+}
+
+.person-token {
+  --person-color: #ffd166;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  min-width: 188px;
+  max-width: 245px;
+  min-height: 116px;
+  padding: 12px 14px 12px 10px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: grab;
+  overflow: visible;
+}
+
+.person-token.compact {
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  min-height: 86px;
+  margin: -70px auto 0;
+  padding: 0;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  z-index: 3;
+}
+
+.rules-panel .person-token.compact {
+  margin: 0 auto -8px;
+}
+
+.person-token.seated .person-info {
+  display: none;
+}
+
+.person-token.selected .character-body {
+  box-shadow:
+    0 0 0 6px rgba(255, 122, 168, 0.35),
+    5px 8px 0 #172033;
+}
+
+.character-sprite {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 88px;
+  height: 92px;
+  animation: idle-bob 2.2s ease-in-out infinite;
+}
+
+.person-token.compact .character-sprite {
+  width: 74px;
+  height: 76px;
+}
+
+.character-shadow {
+  position: absolute;
+  bottom: 2px;
+  width: 62px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(23, 32, 51, 0.2);
+  filter: blur(1px);
+}
+
+.character-body {
+  position: relative;
+  width: 72px;
+  height: 74px;
+  border: 3px solid #172033;
+  border-radius: 43% 48% 42% 52%;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.9), transparent 0.42rem),
+    var(--person-color);
+  box-shadow: 5px 8px 0 #172033;
+}
+
+.person-token.compact .character-body {
+  width: 62px;
+  height: 64px;
+}
+
+.character-eye {
+  position: absolute;
+  top: 27px;
+  width: 9px;
+  height: 12px;
+  border-radius: 999px;
+  background: #172033;
+}
+
+.character-eye.left {
+  left: 21px;
+}
+
+.character-eye.right {
+  right: 21px;
+}
+
+.character-mouth {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  width: 22px;
+  height: 10px;
+  border-bottom: 3px solid #172033;
+  border-radius: 0 0 999px 999px;
+  transform: translateX(-50%);
+}
+
+.character-ear {
+  position: absolute;
+  top: -12px;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #172033;
+  background: var(--person-color);
+  opacity: 0;
+}
+
+.character-ear.left {
+  left: 8px;
+  transform: rotate(-20deg);
+}
+
+.character-ear.right {
+  right: 8px;
+  transform: rotate(20deg);
+}
+
+.species-cat .character-ear,
+.species-cactus .character-ear,
+.species-duck .character-ear {
+  opacity: 1;
+}
+
+.species-cat .character-ear {
+  border-radius: 4px 90% 4px 90%;
+}
+
+.species-robot .character-body {
+  border-radius: 18px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.24), transparent),
+    var(--person-color);
+}
+
+.species-robot .character-body::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -24px;
+  width: 4px;
+  height: 20px;
+  background: #172033;
+  transform: translateX(-50%);
+}
+
+.species-robot .character-body::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -32px;
+  width: 16px;
+  height: 16px;
+  border: 3px solid #172033;
+  border-radius: 50%;
+  background: #ff7aa8;
+  transform: translateX(-50%);
+}
+
+.species-ghost .character-body {
+  border-radius: 48% 48% 20px 20px;
+}
+
+.species-ghost .character-body::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: -4px;
+  height: 14px;
+  background: radial-gradient(circle at 10px 0, transparent 0 9px, #172033 10px 12px, transparent 13px);
+}
+
+.species-cactus .character-body {
+  border-radius: 36px 36px 20px 20px;
+}
+
+.species-cactus .character-ear {
+  top: 18px;
+  width: 18px;
+  height: 32px;
+  border-radius: 999px;
+}
+
+.species-duck .character-mouth {
+  width: 24px;
+  height: 14px;
+  border: 3px solid #172033;
+  border-radius: 999px;
+  background: #ffd166;
+}
+
+.character-accessory {
+  position: absolute;
+  pointer-events: none;
+}
+
+.accessory-glasses {
+  left: 15px;
+  top: 23px;
+  width: 42px;
+  height: 18px;
+  border: 3px solid #172033;
+  border-radius: 999px;
+}
+
+.accessory-glasses::after {
+  content: "";
+  position: absolute;
+  left: 17px;
+  top: 6px;
+  width: 8px;
+  height: 3px;
+  background: #172033;
+}
+
+.accessory-window {
+  right: -8px;
+  top: 10px;
+  width: 25px;
+  height: 25px;
+  border: 3px solid #172033;
+  border-radius: 8px;
+  background: #a7e9ff;
+  transform: rotate(8deg);
+}
+
+.accessory-steam {
+  right: -6px;
+  top: -12px;
+  width: 20px;
+  height: 32px;
+  border-top: 4px solid #172033;
+  border-radius: 50%;
+  transform: rotate(25deg);
+}
+
+.accessory-juggler {
+  left: -7px;
+  top: -8px;
+  width: 18px;
+  height: 18px;
+  border: 3px solid #172033;
+  border-radius: 50%;
+  background: #ff7aa8;
+  box-shadow: 31px -4px 0 -2px #5ec8ff;
+}
+
+.accessory-headphones {
+  left: 13px;
+  top: 16px;
+  width: 46px;
+  height: 38px;
+  border-top: 5px solid #172033;
+  border-radius: 999px 999px 0 0;
+}
+
+.accessory-headphones::before,
+.accessory-headphones::after {
+  content: "";
+  position: absolute;
+  top: 13px;
+  width: 10px;
+  height: 20px;
+  border: 3px solid #172033;
+  border-radius: 999px;
+  background: #ffd166;
+}
+
+.accessory-headphones::before {
+  left: -4px;
+}
+
+.accessory-headphones::after {
+  right: -4px;
+}
+
+.accessory-camera {
+  right: -10px;
+  bottom: 18px;
+  width: 29px;
+  height: 21px;
+  border: 3px solid #172033;
+  border-radius: 7px;
+  background: #ffffff;
+}
+
+.accessory-camera::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #172033;
+  border-radius: 50%;
+  background: #a7e9ff;
+}
+
+.person-info {
+  position: relative;
+  margin-left: -10px;
+  padding: 10px 12px 10px 18px;
+  border: 3px solid #172033;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 5px 5px 0 #172033;
+}
+
+.person-info strong,
+.person-info small {
+  display: block;
+}
+
+.person-info small {
+  max-width: 150px;
+}
+
+.mood-grumpy .character-mouth {
+  bottom: 16px;
+  border-top: 3px solid #172033;
+  border-bottom: 0;
+  border-radius: 999px 999px 0 0;
+}
+
+.mood-chill .character-eye {
+  height: 4px;
+  top: 32px;
+}
+
+.mood-sparkly .character-body::before {
+  content: "";
+  position: absolute;
+  right: -9px;
+  top: -9px;
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  clip-path: polygon(50% 0, 61% 36%, 100% 50%, 61% 64%, 50% 100%, 39% 64%, 0 50%, 39% 36%);
+}
+
+.rules-panel {
+  position: sticky;
+  top: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 245, 215, 0.92)),
+    #ffffff;
+}
+
+.constraint-card {
+  border-width: 3px;
+  box-shadow: 4px 4px 0 rgba(23, 32, 51, 0.16);
+}
+
+.speech-wrap {
+  margin-top: 18px;
+}
+
+.feedback-bubble {
+  position: relative;
+  border-width: 3px;
+  box-shadow: 5px 5px 0 #172033;
+}
+
+.feedback-bubble::before {
+  content: "";
+  position: absolute;
+  left: 30px;
+  top: -12px;
+  width: 22px;
+  height: 22px;
+  border-left: 3px solid #172033;
+  border-top: 3px solid #172033;
+  background: #ffd166;
+  transform: rotate(45deg);
+}
+
+@keyframes idle-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+
+@keyframes bus-blink {
+  from {
+    filter: brightness(0.85);
+  }
+
+  to {
+    filter: brightness(1.35);
+  }
+}
+
+@keyframes stage-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+@media (max-width: 900px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .rules-panel {
+    position: static;
+    order: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .bus-stage {
+    padding: 18px 10px 28px;
+  }
+
+  .bus-shell {
+    padding: 18px 12px 30px;
+    border-radius: 30px;
+    box-shadow: 6px 8px 0 #172033;
+  }
+
+  .bus-windows span:nth-child(n + 3) {
+    display: none;
+  }
+
+  .seat-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(150px, auto);
+    gap: 28px;
+  }
+
+  .seat-slot {
+    grid-column: auto !important;
+    grid-row: auto !important;
+  }
+
+  .dock-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .person-token {
+    min-width: min(100%, 245px);
+  }
+}

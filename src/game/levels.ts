@@ -8,6 +8,7 @@ const characters: Record<string, Person> = {
     emoji: "😎",
     personality: "Believes the middle seat has main-character lighting.",
     catchphrase: "The center is my stage.",
+    visual: { species: "blob", accessory: "glasses", mood: "cool" },
   },
   nora: {
     id: "nora",
@@ -16,6 +17,7 @@ const characters: Record<string, Person> = {
     emoji: "🪟",
     personality: "Needs a window for dramatic music-video staring.",
     catchphrase: "I must gaze into destiny.",
+    visual: { species: "cat", accessory: "window", mood: "dreamy" },
   },
   zed: {
     id: "zed",
@@ -24,6 +26,7 @@ const characters: Record<string, Person> = {
     emoji: "😤",
     personality: "Runs a strict no-elbow-contact policy.",
     catchphrase: "Personal space is a lifestyle.",
+    visual: { species: "robot", accessory: "steam", mood: "grumpy" },
   },
   bobo: {
     id: "bobo",
@@ -32,6 +35,7 @@ const characters: Record<string, Person> = {
     emoji: "🤹",
     personality: "Can only focus beside a best friend.",
     catchphrase: "Buddy system or chaos.",
+    visual: { species: "duck", accessory: "juggler", mood: "bouncy" },
   },
   lulu: {
     id: "lulu",
@@ -40,6 +44,7 @@ const characters: Record<string, Person> = {
     emoji: "🎧",
     personality: "Claims the quiet zone for premium playlist listening.",
     catchphrase: "Shhh, the beat is thinking.",
+    visual: { species: "ghost", accessory: "headphones", mood: "chill" },
   },
   gigi: {
     id: "gigi",
@@ -48,6 +53,7 @@ const characters: Record<string, Person> = {
     emoji: "📸",
     personality: "Needs the group seated perfectly for photos.",
     catchphrase: "Everybody squeeze in.",
+    visual: { species: "cactus", accessory: "camera", mood: "sparkly" },
   },
 };
 

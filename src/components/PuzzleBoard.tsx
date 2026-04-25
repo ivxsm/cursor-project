@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
+import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 import { createEmptyArrangement, evaluateLevel } from "../game/constraints";
 import type { Arrangement, Level, PersonId, SeatId } from "../game/types";
@@ -6,6 +7,7 @@ import { ConstraintCard } from "./ConstraintCard";
 import { FeedbackBubble } from "./FeedbackBubble";
 import { PersonToken } from "./PersonToken";
 import { SeatSlot } from "./SeatSlot";
+import { ThreeScene } from "./ThreeScene";
 
 type PuzzleBoardProps = {
   level: Level;
@@ -24,6 +26,9 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
   const seatedPersonIds = new Set(Object.values(arrangement).filter(Boolean));
   const unseatedPeople = level.people.filter((person) => !seatedPersonIds.has(person.id));
   const failingMessage = evaluation.results.find((result) => !result.passed)?.message ?? "Everyone is secretly delighted.";
+  const selectedPerson = level.people.find((person) => person.id === selectedPersonId);
+  const rowCount = Math.max(...level.seats.map((seat) => seat.row)) + 1;
+  const columnCount = Math.max(...level.seats.map((seat) => seat.column)) + 1;
 
   const updateArrangement = (updater: (current: Arrangement) => Arrangement) => {
     setArrangements((current) => ({
@@ -102,34 +107,73 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
           <span className="difficulty">Difficulty {level.difficulty}/5</span>
         </div>
 
-        <div className={`seat-grid rows-${Math.max(...level.seats.map((seat) => seat.row)) + 1}`}>
-          {level.seats.map((seat) => {
-            const personId = arrangement[seat.id];
-            const person = level.people.find((candidate) => candidate.id === personId);
+        <div className={`bus-stage ${showResults && !evaluation.complete ? "needs-attention" : ""}`}>
+          <div className="bus-atmosphere">
+            <ThreeScene compact />
+          </div>
+          <div className="bus-shell">
+            <div className="bus-roof">
+              <span className="bus-light red" />
+              <span className="bus-route">Route LOL-404</span>
+              <span className="bus-light green" />
+            </div>
+            <div className="bus-windows">
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+            <div
+              className={`seat-grid rows-${rowCount}`}
+              style={
+                {
+                  "--seat-columns": columnCount,
+                  "--seat-rows": rowCount,
+                } as CSSProperties
+              }
+            >
+              {level.seats.map((seat) => {
+                const personId = arrangement[seat.id];
+                const person = level.people.find((candidate) => candidate.id === personId);
 
-            return (
-              <SeatSlot
-                key={seat.id}
-                seat={seat}
-                person={person}
-                selectedPersonId={selectedPersonId}
-                onSeatClick={handleSeatClick}
-                onPersonClick={(personId) => {
-                  if (findSeatForPerson(personId)) {
-                    removePerson(personId);
-                  } else {
-                    handlePersonClick(personId);
-                  }
-                }}
-                onDropPerson={(seatId) => selectedPersonId && placePerson(selectedPersonId, seatId)}
-                onDragPerson={setSelectedPersonId}
-              />
-            );
-          })}
+                return (
+                  <SeatSlot
+                    key={seat.id}
+                    seat={seat}
+                    person={person}
+                    selectedPersonId={selectedPersonId}
+                    onSeatClick={handleSeatClick}
+                    onPersonClick={(personId) => {
+                      if (findSeatForPerson(personId)) {
+                        removePerson(personId);
+                      } else {
+                        handlePersonClick(personId);
+                      }
+                    }}
+                    onDropPerson={(seatId) => selectedPersonId && placePerson(selectedPersonId, seatId)}
+                    onDragPerson={setSelectedPersonId}
+                  />
+                );
+              })}
+            </div>
+            <div className="bus-aisle">
+              <span>tiny aisle of big opinions</span>
+            </div>
+            <div className="bus-wheels">
+              <span />
+              <span />
+            </div>
+          </div>
         </div>
 
-        <div className="bench">
-          <h3>Waiting Line</h3>
+        <div className="bench character-dock">
+          <div className="dock-heading">
+            <div>
+              <p className="eyebrow">Casting call</p>
+              <h3>Waiting creatures</h3>
+            </div>
+            {selectedPerson && <span className="selected-callout">{selectedPerson.catchphrase}</span>}
+          </div>
           <div className="bench-list">
             <AnimatePresence>
               {unseatedPeople.map((person) => (
@@ -156,13 +200,27 @@ export function PuzzleBoard({ level, onComplete }: PuzzleBoardProps) {
       </div>
 
       <aside className="rules-panel">
+        <p className="eyebrow">Mission cards</p>
         <h3>Passenger demands</h3>
         <div className="constraint-list">
           {evaluation.results.map((result, index) => (
             <ConstraintCard key={`${result.constraint.type}-${index}`} level={level} result={result} showStatus={showResults} />
           ))}
         </div>
-        <FeedbackBubble message={showResults ? failingMessage : selectedPersonId ? "Pick a seat for the selected passenger." : "Arrange the passengers, then check the seating."} />
+        <div className="speech-wrap">
+          {selectedPerson && (
+            <PersonToken person={selectedPerson} compact seated draggable={false} selected={Boolean(selectedPersonId)} />
+          )}
+          <FeedbackBubble
+            message={
+              showResults
+                ? failingMessage
+                : selectedPerson
+                  ? `${selectedPerson.name}: ${selectedPerson.catchphrase}`
+                  : "Grab a creature, drop them in the bus, then check the seating."
+            }
+          />
+        </div>
       </aside>
 
       {showResults && evaluation.complete && (
